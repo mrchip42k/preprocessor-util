@@ -1,7 +1,3 @@
-# This program is a wrapper for convenience to a command like this:
-# echo O_APPEND | gcc -include fcntl.h -E - | more
-# python3.6 preproc.py O_APPEND fnctl.h
-
 import sys
 import os
 import subprocess
@@ -9,8 +5,6 @@ import subprocess
 #### SETTINGS ####
 
 CC = "gcc"
-
-TRY_USE_BAT = True
 
 DEFAULT_INCLUDES = [
 	"stdio.h",
@@ -20,17 +14,20 @@ DEFAULT_INCLUDES = [
 	"string.h",
 ]
 
+TRY_USE_BAT = True
+
 #### -------- ####
 
 
 # This marker is used to remove any included code from the output,
 # and only display the expanded macros given as the first argument to this program.
 # Preproc seems to delete comments and defines, a global constant seems remain untouched.
+# There should be no need to modify this.
 MARKER = "const int PREPROC_CONTENT_MARKER = 69420;"
 
 
-def arg_error():
-	print("Expected arguments: <code to preprocess> <header> <another_header...>")
+def error(message):
+	print(f"\n{sys.argv[0]}: {message}")
 	sys.exit(1)
 
 
@@ -63,8 +60,7 @@ def run_preprocessor():
 			input=str.encode(arg_input)
 		).decode("UTF-8")
 	except:
-		print(f"\n{sys.argv[0]}: Error: Failed to run preprocessor.")
-		sys.exit(1)
+		error("Failed to run preprocessor.")
 
 
 def clean_output(raw):
@@ -94,7 +90,9 @@ def display_with_bat(cleaned):
 
 def main():
 	if len(sys.argv) < 2:
-		arg_error()
+		error("Invalid arguments. Expected:\n"
+			+ "preproc <code to preprocess> (Uses a default set of includes)\n"
+			+ "preproc <code to preprocess> <any number of headers to include>")
 
 	preprocessor_output = run_preprocessor()
 	cleaned = clean_output(preprocessor_output)
